@@ -22,16 +22,6 @@ The ETL pipeline has three main phases: **Extract**, **Transform**, and **Load**
    - The schema is stored in the **AWS Glue Data Catalog**, which makes the data queryable through **Amazon Athena**.
    - The pipeline is now ready for querying and analysis using SQL.
 
-## S3 Bucket Structure
-
-The S3 bucket is organized with the following folder structure:
-commodities_data_bucket/ 
-├── raw_data/ 
-│ ├── to_process/ # Raw API data stored here before processing 
-│ └── processed/ # Raw data moved here after processing 
-├── transformed_data/ # Transformed data after processing
-
-
 ### Folder Description:
 - `raw_data/to_process`: New raw data from the API lands here.
 - `raw_data/processed`: Once processed, the raw data is moved to this folder.
@@ -56,3 +46,25 @@ commodities_data_bucket/
 4. The second Lambda function transforms the raw data and stores the cleaned version in the `transformed_data` folder in S3.
 5. AWS Glue **Crawler** runs periodically to update the schema in the **Glue Data Catalog**.
 6. **Amazon Athena** can then be used to run SQL queries on the transformed data for analytics and reporting.
+
+## Try it Yourself:
+
+1. **Get Your Free API Key**: Visit [GoldAPI](https://www.goldapi.io/) and sign up to obtain your API key.
+
+2. **Clone the Repository**: Clone this project to your local machine.
+
+3. **Set Up Your Environment**: Create a `.env` file in the project root and add your API key like this:
+   ```bash
+   API_KEY=your_api_key_here
+   ```
+4. Install Dependencies: You'll need the pandas and requests libraries. Install them by running:
+   ```bash
+   pip install pandas requests
+   ```
+   Alternatively, feel free to use a virtual environment if you prefer.
+5. Run the Scripts: Execute the scripts from the "For local usage" section to extract and transform data.
+
+## AWS Lambda Suggestions
+- You can copy the provided Lambda functions or modify them to suit your use case.
+- For the extraction function, you'll need to include the requests library. A pre-packaged requests layer is included in this repository; simply rename the folder to 'python' before deploying.
+- For the transformation function, you can leverage AWS's managed pandas layer to handle the data transformation.
