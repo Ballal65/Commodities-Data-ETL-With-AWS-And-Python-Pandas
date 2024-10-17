@@ -63,10 +63,12 @@ The ETL pipeline has three main phases: **Extract**, **Transform**, and **Load**
    ```
    Alternatively, feel free to use a virtual environment if you prefer.
 5. Create following folders inside 'For local usage'
+   ```
    |- raw_data
    |--- to_process
    |--- processed
    |- transformed_data
+   ```
 7. Run the Scripts: Execute the scripts from the "For local usage" section to extract and transform data.
 
 ## AWS Lambda Suggestions
