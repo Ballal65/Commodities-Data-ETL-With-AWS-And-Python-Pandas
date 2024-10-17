@@ -53,16 +53,21 @@ The ETL pipeline has three main phases: **Extract**, **Transform**, and **Load**
 
 2. **Clone the Repository**: Clone this project to your local machine.
 
-3. **Set Up Your Environment**: Create a `.env` file in the project root and add your API key like this:
+3. **Set Up Your Environment**: Create a `.env` file inside 'For local usage' and add your API key like this:
    ```bash
-   API_KEY=your_api_key_here
+   API_KEY=your_api_key
    ```
 4. Install Dependencies: You'll need the pandas and requests libraries. Install them by running:
    ```bash
-   pip install pandas requests
+   pip install pandas requests dotenv
    ```
    Alternatively, feel free to use a virtual environment if you prefer.
-5. Run the Scripts: Execute the scripts from the "For local usage" section to extract and transform data.
+5. Create following folders inside 'For local usage'
+   |- raw_data
+   |--- to_process
+   |--- processed
+   |- transformed_data
+7. Run the Scripts: Execute the scripts from the "For local usage" section to extract and transform data.
 
 ## AWS Lambda Suggestions
 - You can copy the provided Lambda functions or modify them to suit your use case.
