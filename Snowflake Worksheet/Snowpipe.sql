@@ -1,0 +1,73 @@
+CREATE DATABASE COMMODITIES;
+
+CREATE SCHEMA FILE_FORMATS;
+
+CREATE SCHEMA EXTERNAL_STAGING;
+
+USE SCHEMA FILE_FORMATS;
+
+CREATE OR REPLACE FILE FORMAT CSV_DATA
+TYPE = 'CSV'
+FIELD_DELIMITER = ','
+COMPRESSION = 'AUTO'
+SKIP_HEADER = 1,
+TRIM_SPACE = TRUE;
+
+USE SCHEMA PUBLIC;
+-- CSV Columns
+-- date,metal,exchange,currency,price,prev_close_price,price_gram_1k
+-- 2025-01-28 10:30:00,XAU,LBMA,USD,2743.7,2767.1,3.6755000000000004
+
+CREATE TABLE IF NOT EXISTS COMMODITIES_BIG_TABLE (
+    date TIMESTAMP,              -- Timestamp of the price data
+    metal STRING,                -- Metal type, e.g., XAU (Gold), XAG (Silver)
+    exchange STRING,             -- Exchange source of the data, e.g., LBMA
+    currency STRING,             -- Currency of the price, e.g., USD
+    price FLOAT,                 -- Current price of the metal
+    prev_close_price FLOAT,      -- Previous closing price
+    price_gram_1k FLOAT          -- Price per gram for 1k purity
+);
+
+CREATE OR REPLACE STORAGE INTEGRATION S3_INTEGRATION
+  TYPE = EXTERNAL_STAGE
+  STORAGE_PROVIDER = S3
+  -- A role with S3 access
+  STORAGE_AWS_ROLE_ARN = '<-- IAM ROLE ARN-->'
+  ENABLED = TRUE
+  STORAGE_ALLOWED_LOCATIONS = ('s3://<-- Bucket -->/<-- Path -->/')
+  COMMENT = 'Storage integration for S3 pokemon bucket';
+
+  -- Storage_AWS_EXTERNAL_ID --> sts:ExternalId & STORAGE_AWS_IAM_USER_ARN --> AWS 
+DESC INTEGRATION S3_INTEGRATION;
+
+-- Creating an external stage
+CREATE OR REPLACE STAGE COMMODITIES.EXTERNAL_STAGING.s3_external_stage
+URL = 's3://<-- Bucket -->/<-- Path -->/'
+STORAGE_INTEGRATION = S3_INTEGRATION
+FILE_FORMAT = COMMODITIES.FILE_FORMATS.CSV_DATA;
+
+-- List all files in the stage
+LIST @COMMODITIES.EXTERNAL_STAGING.s3_external_stage;
+
+COPY INTO COMMODITIES.PUBLIC.COMMODITIES_BIG_TABLE
+FROM @COMMODITIES.EXTERNAL_STAGING.s3_external_stage
+FILE_FORMAT = COMMODITIES.FILE_FORMATS.CSV_DATA;
+
+SELECT * FROM COMMODITIES.PUBLIC.COMMODITIES_BIG_TABLE ORDER BY DATE;
+
+-- TRUNCATE TABLE COMMODITIES.PUBLIC.COMMODITIES_STAGING;
+
+CREATE OR REPLACE SCHEMA COMMODITIES.PIPES;
+
+CREATE OR REPLACE PIPE GOLDEN_PIPE
+AUTO_INGEST = TRUE
+AS
+COPY INTO COMMODITIES.PUBLIC.COMMODITIES_BIG_TABLE
+FROM @COMMODITIES.EXTERNAL_STAGING.s3_external_stage
+FILE_FORMAT = COMMODITIES.FILE_FORMATS.CSV_DATA;
+
+
+-- Bucket > Properties > Create Event Notification > Press All object created > SQS QUEUE > Notification_channel as SQS
+DESC PIPE GOLDEN_PIPE;
+
+SELECT * FROM COMMODITIES.PUBLIC.COMMODITIES_BIG_TABLE ORDER BY DATE;
